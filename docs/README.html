@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Lineage-informative microhaplotypes for spatio-temporal surveillance of Plasmodium vivax malaria parasites &#8212; Lineage-informative microhaplotypes for spatio-temporal surveillance of Plasmodium vivax malaria parasites</title>
+    <title>Introduction &#8212; Lineage-informative microhaplotypes for spatio-temporal surveillance of Plasmodium vivax malaria parasites</title>
   
   
   
@@ -32,7 +32,7 @@
     <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=384b581d" />
     <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css?v=be8a1c11" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
   
@@ -69,6 +69,7 @@ const thebe_selector_output = ".output, .cell_output"
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Discovery of potential microhaplotype markers in Plasmodium vivax" href="windows.html" />
+    <link rel="prev" title="Lineage-informative microhaplotypes for spatio-temporal surveillance of Plasmodium vivax malaria parasites" href="index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -130,8 +131,6 @@ const thebe_selector_output = ".output, .cell_output"
       
       
       
-        
-      
       <div class="bd-sidebar-primary bd-sidebar">
         
 
@@ -148,7 +147,7 @@ const thebe_selector_output = ".output, .cell_output"
 
   
 
-<a class="navbar-brand logo" href="#">
+<a class="navbar-brand logo" href="index.html">
   
   
   
@@ -173,13 +172,14 @@ const thebe_selector_output = ".output, .cell_output"
     <div class="bd-toc-item navbar-nav active">
         
         <ul class="nav bd-sidenav bd-sidenav__home-link">
-            <li class="toctree-l1 current active">
-                <a class="reference internal" href="#">
+            <li class="toctree-l1">
+                <a class="reference internal" href="index.html">
                     Lineage-informative microhaplotypes for spatio-temporal surveillance of Plasmodium vivax malaria parasites
                 </a>
             </li>
         </ul>
-        <ul class="nav bd-sidenav">
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="windows.html">Discovery of potential microhaplotype markers in <em>Plasmodium vivax</em></a></li>
 <li class="toctree-l1"><a class="reference internal" href="selection.html">Microhaplotype candidate panel selection</a></li>
 </ul>
@@ -333,7 +333,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Lineage-informative microhaplotypes for spatio-temporal surveillance of Plasmodium vivax malaria parasites</h1>
+    <h1>Introduction</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -347,20 +347,16 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section class="tex2jax_ignore mathjax_ignore" id="lineage-informative-microhaplotypes-for-spatio-temporal-surveillance-of-plasmodium-vivax-malaria-parasites">
-<h1>Lineage-informative microhaplotypes for spatio-temporal surveillance of Plasmodium vivax malaria parasites<a class="headerlink" href="#lineage-informative-microhaplotypes-for-spatio-temporal-surveillance-of-plasmodium-vivax-malaria-parasites" title="Link to this heading">#</a></h1>
+  <section class="tex2jax_ignore mathjax_ignore" id="introduction">
+<h1>Introduction<a class="headerlink" href="#introduction" title="Link to this heading">#</a></h1>
 <p>This is the companion repository for the paper <a class="reference external" href="https://www.medrxiv.org/content/10.1101/2023.03.13.23287179v1">Lineage-informative microhaplotypes for spatio-temporal surveillance of Plasmodium vivax malaria parasites</a>.</p>
-<p>The main aim of this repository is to provide details on the methods used for the discovery, selection, and exploration/optimisation of candidate microhaplotype panels for <em>P. vivax</em>. In addition, it provides a customisable template framework that can be adapted to different needs based on requirements for different panel use cases such as number of panel markers, diversity criteria, geographical region, selection process, etc.</p>
 <p>Here we provide two interactive notebooks that go step-by-step through the selection process and exploration of marker benchmarking, together with a number of accessory files to speed up future execution.</p>
 <ol class="arabic simple">
-<li><p>In the <a class="reference internal" href="windows.html"><span class="std std-doc">first notebook</span></a>, we scan the <em>P. vivax</em> genome in partially-overlapping sliding windows and then calculate a number of summary statistics (in this example: cardinality, heterozygosity, entropy). Each window represents a potential microhaplotype marker, assuming it satisfies a number of customisable selection criteria (e.g. diversity, number of variants, etc.). The selection criteria we use are based on a previous study which used an <em>in silico</em> approach to determine optimal criteria for capturing sufficient data from marker panels to detect identity-by-descent (IBD), or relatedness between parasite lineages <a class="reference internal" href="#10.1534/genetics.119.302120"><span class="xref myst">Taylor et al, Genetics 2019</span></a>. However, this is only one of many potential use cases that could be explored with this framework.</p></li>
+<li><p>In the <a class="reference internal" href="windows.html"><span class="std std-doc">first notebook</span></a>, we scan the <em>P. vivax</em> genome in partially-overlapping sliding windows and then calculate a number of summary statistics (in this example: cardinality, heterozygosity, entropy). Each window represents a potential microhaplotype marker, assuming it satisfies a number of customisable selection criteria (e.g. diversity, number of variants, etc.). The selection criteria we use are based on a previous study which used an <em>in silico</em> approach to determine optimal criteria for capturing sufficient data from marker panels to detect identity-by-descent (IBD), or relatedness between parasite lineages <a class="reference external" href="https://doi.org/10.1534/genetics.119.302120">Taylor et al, Genetics 2019</a>. However, this is only one of many potential use cases that could be explored with this framework.</p></li>
 <li><p>The <a class="reference internal" href="selection.html"><span class="std std-doc">second notebook</span></a> analyses all the windows together, explores panel optimisation, and then selects a candidate panel. The selection process is a challenging mathematical optimisation problem, and here we provide two complementary and effective ways to perform the task. It is worth mentioning that while we show selection methods here, often a subsequent manual curation would be required because of certain constraints, downstream requirements or other considerations (proximity to other markers, reduction of gaps across the genome, low/high diversity regions, or individual assay/panel performance during experimental validation, etc.) The codebase is also modular and can be extended to use different optmisation algorithms.</p></li>
 </ol>
 <p>We used data from a subset of high-quality samples that are part of the open <a class="reference external" href="https://www.malariagen.net/resource/30">MalariaGEN Pv4 dataset</a>, which contains genome variation data on nearly two-thousands worldwide samples of natural <em>Plasmodium vivax</em> infections. Details on this project, the methods used, and all contributing partners can be found in the key publication: <a class="reference external" href="https://doi.org/10.12688/wellcomeopenres.17795.1">MalariaGEN et al, Wellcome Open Research 2022, 7:136 https://doi.org/10.12688/wellcomeopenres.17795.1</a>. The dataset can be accessed in <a class="reference external" href="https://new_malariagen.staging.sanger.ac.uk/resource/30/">a number of ways</a> and here we used the <a class="reference external" href="https://github.com/malariagen/malariagen-data-python"><code class="docutils literal notranslate"><span class="pre">malariagen_data</span></code> Python package</a>, which allows to use the data directly from the cloud and without having to first download them locally. The <a class="reference external" href="https://malariagen.github.io/parasite-data/pv4/Data_access.html">Pv4 user guide</a> provides all the information on how to use the package as well as some examples to get started.</p>
 <p>The notebooks can be run from any computer, including via MyBinder or Google Colab, two free interactive computing services that run in a cloud environment. Note that the first notebook requires navigation through hundreds of thousands of genetic variations in thousands of samples and, while the <a class="reference external" href="https://github.com/malariagen/malariagen-data-python"><code class="docutils literal notranslate"><span class="pre">malariagen_data</span></code> Python package</a> provides and efficient way to access the data directly on the cloud, the process can still take hours (or days!) depending on the available computing infrastructure. To jump-start the selection process described in the second notebook, we have also provided a number of pre-calculated statistics for ease of use.</p>
-<p>The code contained here has been developed by <a class="reference external" href="https://github.com/roamato">Roberto Amato</a>, <a class="reference external" href="https://github.com/kathryn1995">Kathryn Murie</a>, and <a class="reference external" href="https://github.com/svsiegel">Sasha Siegel</a>.</p>
-<div class="toctree-wrapper compound">
-</div>
 </section>
 
     <script type="text/x-thebe-config">
@@ -393,6 +389,15 @@ document.write(`
                 <footer class="prev-next-footer">
                   
 <div class="prev-next-area">
+    <a class="left-prev"
+       href="index.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Lineage-informative microhaplotypes for spatio-temporal surveillance of Plasmodium vivax malaria parasites</p>
+      </div>
+    </a>
     <a class="right-next"
        href="windows.html"
        title="next page">
