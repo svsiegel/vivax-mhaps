@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "vivax-mhaps"
+version = "0.1.0"
+description = "Required packages for svsiegel/vivax-mhaps repo"
+authors = ["Roberto Amato"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+numpy = "<=1.23.5"
+pandas = "^2.2.0"
+scikit-allel = "<=1.3.7"
+malariagen_data = "<=7.14.1"
+matplotlib = "^3.8.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
