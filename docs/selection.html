@@ -1243,8 +1243,8 @@ Name: count, dtype: int64
                                                          <span class="n">size</span><span class="o">=</span><span class="n">win_size</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="n">win_size</span><span class="o">+</span><span class="n">spacing</span><span class="p">,</span>
                                                          <span class="n">start</span><span class="o">=</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;chromStart&quot;</span><span class="p">],</span> <span class="n">stop</span><span class="o">=</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;chromEnd&quot;</span><span class="p">])</span>
             <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">local_list</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span> <span class="c1"># Check if at least one sliding window didn&#39;t find any marker</span>
-                <span class="c1">#print(f&#39;Only {np.count_nonzero(NN)} out of {n_core} windows found in \</span>
-<span class="c1">#{row[&quot;chrom&quot;]}:{row[&quot;chromStart&quot;]}-{row[&quot;chromEnd&quot;]}&#39;)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Only </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">NN</span><span class="p">)</span><span class="si">}</span><span class="s1"> out of </span><span class="si">{</span><span class="n">n_core</span><span class="si">}</span><span class="s1"> windows found in </span><span class="se">\</span>
+<span class="si">{</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;chrom&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">:</span><span class="si">{</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;chromStart&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">-</span><span class="si">{</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;chromEnd&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
                     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;L:</span><span class="si">{</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;length&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">, W:</span><span class="si">{</span><span class="n">win_size</span><span class="si">}</span><span class="s1">, N:</span><span class="si">{</span><span class="n">n_core</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
                     <span class="nb">print</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
@@ -1277,6 +1277,13 @@ Name: count, dtype: int64
 </div>
 </div>
 <div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Only 2 out of 3 windows found in PvP01_01_v1:116542-677963
+Only 0 out of 1 windows found in PvP01_04_v1:566928-685686
+Only 5 out of 6 windows found in PvP01_07_v1:60454-1256419
+Only 4 out of 5 windows found in PvP01_08_v1:28424-1132375
+Only 3 out of 4 windows found in PvP01_10_v1:140990-1011339
+</pre></div>
+</div>
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>95
 </pre></div>
 </div>
