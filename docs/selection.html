@@ -395,6 +395,7 @@ document.write(`
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#environment-and-data">Environment and data</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-the-data">Loading the data</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#load-the-genomic-data">Load the genomic data</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#data-exploration">Data exploration</a></li>
@@ -404,7 +405,7 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#evenly-spaced">Evenly spaced</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#variants-list">Variants list</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#worked-example">Worked example</a></li>
 </ul>
             </nav>
         </div>
@@ -429,13 +430,21 @@ document.write(`
 <li><p><a class="reference internal" href="#evenly-spaced"><span class="std std-ref">Evenly-spaced</span></a></p></li>
 </ol>
 </li>
-<li><p><a class="reference internal" href="#variants-list"><span class="std std-ref">Variants list</span></a></p></li>
+<li><p><a class="reference internal" href="#worked-example"><span class="std std-ref">Worked example</span></a></p></li>
 </ol>
 <p>All the data required to run this notebook, as well as the dataframes/files generated in the <a class="reference internal" href="windows.html"><span class="doc std std-doc">previous notebook</span></a> are also provided pre-calculated in this repository.</p>
 <section id="environment-and-data">
 <span id="id1"></span><h2>Environment and data<a class="headerlink" href="#environment-and-data" title="Link to this heading">#</a></h2>
-<p>This notebook can be run from any computer and can also work from a compute node within Google Cloud, for example via MyBinder or Google Colab which are free interactive computing services running in a cloud environment. Here we only use common packages that come pre-installed in many computing environments, without strong version dependencies.</p>
-<p>First, we will load all required packages to get started.</p>
+<p>This notebook can be run from any computer and can also work from a compute node within Google Cloud, for example via MyBinder or Google Colab, which are free interactive computing services running in a cloud environment. We primarily use common packages that come pre-installed in many computing environments. However, some specialised packages (e.g. <a class="reference external" href="https://github.com/malariagen/malariagen-data-python"><code class="docutils literal notranslate"><span class="pre">malariagen_data</span></code></a>) might require manual installation.</p>
+<p>For example, the line below can be uncommented and run on Google Colab to install <code class="docutils literal notranslate"><span class="pre">malariagen-data</span></code> if needed:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="ch">#!pip install -q --no-warn-conflicts malariagen-data==7.14.1</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>First, we load all required packages to get started.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load all required packages and print their version</span>
@@ -446,12 +455,14 @@ document.write(`
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Pandas version: </span><span class="si">{</span><span class="n">version</span><span class="p">(</span><span class="s2">&quot;pandas&quot;</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Matplotlib version: </span><span class="si">{</span><span class="n">version</span><span class="p">(</span><span class="s2">&quot;matplotlib&quot;</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;scikit-allel version: </span><span class="si">{</span><span class="n">version</span><span class="p">(</span><span class="s2">&quot;scikit-allel&quot;</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;malariagen-data version: </span><span class="si">{</span><span class="n">version</span><span class="p">(</span><span class="s2">&quot;malariagen_data&quot;</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">import</span> <span class="nn">matplotlib</span> <span class="k">as</span> <span class="nn">mpl</span>
 <span class="kn">import</span> <span class="nn">allel</span>
+<span class="kn">from</span> <span class="nn">malariagen_data.pv4</span> <span class="kn">import</span> <span class="n">Pv4</span>
 
 <span class="c1"># Setup plotting backend</span>
 <span class="o">%</span><span class="k">matplotlib</span> inline
@@ -463,6 +474,7 @@ document.write(`
 Pandas version: 2.1.3
 Matplotlib version: 3.8.2
 scikit-allel version: 1.3.7
+malariagen-data version: 7.14.1
 </pre></div>
 </div>
 </div>
@@ -757,6 +769,27 @@ scikit-allel version: 1.3.7
 </div></div></div>
 </div>
 </section>
+<section id="load-the-genomic-data">
+<h3>Load the genomic data<a class="headerlink" href="#load-the-genomic-data" title="Link to this heading">#</a></h3>
+<p>The pre-calculated windows file contain all the information needed for the selection of the panel. This section is only required if you would like to run the last part of this notebook (<a class="reference internal" href="#worked-example"><span class="std std-ref">Worked example</span></a>), where genomic data are required to calculate the allele frequencies of each variant and prepare the input file for <code class="docutils literal notranslate"><span class="pre">paneljudge</span></code>.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pv4</span> <span class="o">=</span> <span class="n">Pv4</span><span class="p">()</span>
+<span class="n">sample_metadata</span> <span class="o">=</span> <span class="n">pv4</span><span class="o">.</span><span class="n">sample_metadata</span><span class="p">()</span>
+<span class="n">variant_dataset</span> <span class="o">=</span> <span class="n">pv4</span><span class="o">.</span><span class="n">variant_calls</span><span class="p">(</span><span class="n">extended</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pv4_fws</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;../supplementary_files/Pv4_fws.txt&#39;</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="s1">&#39;t&#39;</span><span class="p">)</span>
+<span class="n">sample_metadata</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">sample_metadata</span><span class="p">,</span> <span class="n">pv4_fws</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s1">&#39;Sample&#39;</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;outer&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
 </section>
 <section id="data-exploration">
 <span id="id2"></span><h2>Data exploration<a class="headerlink" href="#data-exploration" title="Link to this heading">#</a></h2>
@@ -829,7 +862,7 @@ Name: count, dtype: int64
 </div>
 </div>
 <p>Nearly 90% of the windows across the genome only have 1 or 2 variants and thus are not suitable microhaplotype candidates.</p>
-<p>Next, let’s have a look at the distribution of heterozigosity across the windows.</p>
+<p>Next, let’s have a look at the distribution of heterozygosity across the windows.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">_</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">windows_df</span><span class="p">[</span><span class="s2">&quot;het&quot;</span><span class="p">],</span><span class="mi">100</span><span class="p">,</span><span class="n">log</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -852,7 +885,7 @@ Name: count, dtype: int64
 </div>
 </div>
 </div>
-<p>The distribution is largely skewed towards low values, because of the large number of window with only 1 or 2 variants, where the theortical maximum heterozigosity is 0.5. In total, there are 3,830 windows with heterozigosity greater than or equal 0.5.</p>
+<p>The distribution is largely skewed towards low values, because of the large number of window with only 1 or 2 variants, where the theortical maximum heterozygosity is 0.5. In total, there are 3,830 windows with heterozygosity greater than or equal 0.5.</p>
 <p>For a first rough idea of how many candidates we have, we can combine the two criteria. For example:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -866,7 +899,7 @@ Name: count, dtype: int64
 </div>
 </div>
 </div>
-<p>Out of the initial list of 13,498 candidate windows, only 1,110 have between 3 and 10 variants and an heterozigosity above 0.6.</p>
+<p>Out of the initial list of 13,498 candidate windows, only 1,110 have between 3 and 10 variants and an heterozygosity above 0.6.</p>
 <p>Some of these windows will occour in clusters of high diversity along the genome, so we can then decide to look at the distribution of the 13,498 microhaplotype windows across the core genome using a Manhattan plot. The utility function below will plot each window as a dot and concatenate the core regions across the 14 chromosomes.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -913,9 +946,9 @@ Name: count, dtype: int64
 <span class="n">plot_man</span><span class="p">(</span><span class="n">windows_df</span><span class="p">,</span> <span class="s1">&#39;variant_counts&#39;</span><span class="p">)</span>
 
 <span class="c1"># Rich rainbow colour palette</span>
-<span class="c1"># rainbow_palette = [&#39;#C62828&#39;,&#39;#D81B60&#39;,&#39;#8E24AA&#39;,&#39;#5E35B1&#39;,&#39;#3949AB&#39;,&#39;#1E88E5&#39;,&#39;#039BE5&#39;,</span>
+<span class="c1">#rainbow_palette = [&#39;#C62828&#39;,&#39;#D81B60&#39;,&#39;#8E24AA&#39;,&#39;#5E35B1&#39;,&#39;#3949AB&#39;,&#39;#1E88E5&#39;,&#39;#039BE5&#39;,</span>
 <span class="c1">#               &#39;#00ACC1&#39;,&#39;#00897B&#39;,&#39;#43A047&#39;,&#39;#7CB342&#39;,&#39;#C0CA33&#39;,&#39;#FFB300&#39;,&#39;#F4511E&#39;]</span>
-<span class="c1"># plot_man(windows_df, &#39;variant_counts&#39;, rainbow_palette) # for a more colorful version</span>
+<span class="c1">#plot_man(windows_df, &#39;variant_counts&#39;, rainbow_palette) # for a more colorful version</span>
 </pre></div>
 </div>
 </div>
@@ -1012,7 +1045,7 @@ Name: count, dtype: int64
 <li><p>orange = internal hypervariable regions</p></li>
 <li><p>blue = centromere</p></li>
 </ul>
-<p>Markers are indicated by vertical lines (black for the selected ones) where the height is proportional to heterozigosity (dotted horizontal line denotes heterozigosity = 0.5).</p>
+<p>Markers are indicated by vertical lines (black for the selected ones) where the height is proportional to heterozygosity (dotted horizontal line denotes heterozygosity = 0.5).</p>
 <p>So we define the palette, and the plotting parameters below.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -1083,7 +1116,7 @@ Name: count, dtype: int64
 
     <span class="n">windows</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;window_start&quot;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="c1"># Guarantee they are sorted by position</span>
     
-    <span class="c1"># Left - Heterozigosity per window and average of the candidate panel</span>
+    <span class="c1"># Left - Heterozygosity per window and average of the candidate panel</span>
     <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s2">&quot;right&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
     <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s2">&quot;top&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
 
@@ -1144,7 +1177,7 @@ Name: count, dtype: int64
         <span class="n">local_list</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">local_list</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">n_core</span><span class="p">:</span>
-            <span class="c1"># Sort by heterozigosity and pick the top - the &quot;greedy&quot; part</span>
+            <span class="c1"># Sort by heterozygosity and pick the top - the &quot;greedy&quot; part</span>
             <span class="n">core_windows</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;het&quot;</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">core_windows</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;midpoint&quot;</span><span class="p">]):</span>
                 <span class="n">local_list</span> <span class="o">+=</span> <span class="p">[</span><span class="n">core_windows</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()]</span> <span class="c1"># Add the top window to the list</span>
@@ -1214,7 +1247,7 @@ Name: count, dtype: int64
 </section>
 <section id="evenly-spaced">
 <span id="id5"></span><h3>Evenly spaced<a class="headerlink" href="#evenly-spaced" title="Link to this heading">#</a></h3>
-<p>A different heuristic approach is to optimise based on spacing as a first priority, and informativeness (in this case heterozigosity) as a second priority. This approach decides the minimum spacing desired between markers (default=1000) and then divides each core region into equal sized segments (proportional to the number of markers required per core region), leaving the desired minimum distance gap in between the segments. Then, a sliding window is moved through each segment, identifying the highest heterozygosity marker window within it.</p>
+<p>A different heuristic approach is to optimise based on spacing as a first priority, and informativeness (in this case heterozygosity) as a second priority. This approach decides the minimum spacing desired between markers (default=1000) and then divides each core region into equal sized segments (proportional to the number of markers required per core region), leaving the desired minimum distance gap in between the segments. Then, a sliding window is moved through each segment, identifying the highest heterozygosity marker window within it.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">get_max_idx</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
@@ -1239,7 +1272,7 @@ Name: count, dtype: int64
             <span class="c1"># Calculate the size of the sliding window based on the size of the region, the number of markers,</span>
             <span class="c1"># and the required minimum buffer spacing between them</span>
             <span class="n">win_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;length&quot;</span><span class="p">]</span><span class="o">/</span><span class="n">n_core</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;int&quot;</span><span class="p">)</span> <span class="o">-</span> <span class="n">spacing</span><span class="p">])</span>
-            <span class="c1"># Run a sliding window in the region and for each window get the index of the highest heterozigosity marker</span>
+            <span class="c1"># Run a sliding window in the region and for each window get the index of the highest heterozygosity marker</span>
             <span class="n">local_list</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">NN</span> <span class="o">=</span> <span class="n">allel</span><span class="o">.</span><span class="n">windowed_statistic</span><span class="p">(</span><span class="n">core_windows</span><span class="p">[</span><span class="s2">&quot;midpoint&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;int&quot;</span><span class="p">),</span> <span class="n">core_windows</span><span class="p">[</span><span class="s2">&quot;het&quot;</span><span class="p">],</span> <span class="n">get_max_idx</span><span class="p">,</span>
                                                          <span class="n">size</span><span class="o">=</span><span class="n">win_size</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="n">win_size</span><span class="o">+</span><span class="n">spacing</span><span class="p">,</span>
                                                          <span class="n">start</span><span class="o">=</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;chromStart&quot;</span><span class="p">],</span> <span class="n">stop</span><span class="o">=</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;chromEnd&quot;</span><span class="p">])</span>
@@ -1313,12 +1346,13 @@ Only 3 out of 4 windows found in PvP01_10_v1:140990-1011339
 </div>
 </div>
 <p>As we can see, there is a definite improvement in spacing of markers, however, a drawback to this approach is that we could be ignoring good microhaplotype windows with high informativeness by insisting that the spacing be consistent between markers.</p>
-</section>
-</section>
-<section id="variants-list">
-<span id="id6"></span><h2>Variants list<a class="headerlink" href="#variants-list" title="Link to this heading">#</a></h2>
 <p>There are other, more sophisticate (but computationally demanding) approaches to solve this problem, like <a class="reference external" href="https://en.wikipedia.org/wiki/Dynamic_programming">dynamic programming</a> which can effectively optimise multiple criteria simultaneously (for example, spacing and heterozygosity). This general framework provides a way to get started and experiment different way to select a candidate set of markers. As mentioned at the beginning, regardless of the bioinformatic method used for the candidate selection, it is very likely that a final manual curation is required to satisfy, for example, molecular constraints of the specific platform used.</p>
-<p>To facilitate the last step, the function below maps variants to windows and returns the position (absolute and relative) of all the variants it containes.</p>
+</section>
+</section>
+<section id="worked-example">
+<span id="id6"></span><h2>Worked example<a class="headerlink" href="#worked-example" title="Link to this heading">#</a></h2>
+<p>In this last example we run an example end-to-end, from the design of the panel to the preparation for its evaluation using <a class="reference external" href="https://github.com/aimeertaylor/paneljudge">paneljudge</a>. To simplify the process, we start by defining a number of accessory functions.</p>
+<p>First, we will use the function below to map variants to windows they belong to and return the position (absolute and relative) of all the variants it containes.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">win_to_variants</span><span class="p">(</span><span class="n">windows</span><span class="p">,</span> <span class="n">variants</span><span class="p">):</span>
@@ -1358,9 +1392,80 @@ Only 3 out of 4 windows found in PvP01_10_v1:140990-1011339
 </div>
 </div>
 </div>
+<p><code class="docutils literal notranslate"><span class="pre">paneljudge</span></code> treats each microhaplotype as a single variant rather than a collection of individual ones. The microhaplotype frequencies are a required input to run the simulations and the function below calculates them. For a given microhaplotype and the variants it contains, the function extract the sample genotypes and transforms them into <em>haplotypes</em> (i.e. the concatenation of the allele state of each variant). For example, if a microhaplotype contains two biallelic SNPs, there are up to four theoretical haplotypes possible (ab, Ab, aB, AB) corresponding to as many microhaplotype alleles.</p>
+<p>Before calculating frequencies, we need to define a strategy to handle “heterozygous” (i.e. the sample contains a collection of parasites with different alleles in that position) and “missing” (i.e. not enough reads to confidently output an allele) genotype calls. The strict sample selection criteria mean that those calls are overall very rare, to the point that different approaches have very limited impact on the final results. Because of that and for the sake of simplicity, we decided to exclude any haplotype containing missing calls and randomly select one of the alleles in heterozygous calls (done under the hood by the <code class="docutils literal notranslate"><span class="pre">scikit-allel</span></code> function <code class="docutils literal notranslate"><span class="pre">haploidify_samples()</span></code>). We explicitly define the random seed for reproducibility purposese.</p>
+<p>This is all handled within the fuction below:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">win_to_variants</span><span class="p">(</span><span class="n">windows_subset</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">even_muhap_list</span><span class="p">],</span> <span class="n">variant_coords</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">haplotype_freq</span><span class="p">(</span><span class="n">amplicon</span><span class="p">,</span> <span class="n">variants</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">250523</span><span class="p">):</span>
+    
+    <span class="n">muhap</span> <span class="o">=</span> <span class="n">amplicon</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;;&quot;</span><span class="p">)</span>
+    <span class="n">va</span><span class="o">=</span><span class="n">variants</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">variants</span><span class="o">=</span><span class="n">muhap</span><span class="p">)</span>
+    <span class="n">gt</span> <span class="o">=</span> <span class="n">allel</span><span class="o">.</span><span class="n">GenotypeArray</span><span class="p">(</span><span class="n">va</span><span class="p">[</span><span class="s2">&quot;call_genotype&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+    
+    <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+    <span class="n">haplo</span> <span class="o">=</span> <span class="n">gt</span><span class="o">.</span><span class="n">haploidify_samples</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+    <span class="n">haplo_str</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">haplo</span><span class="o">.</span><span class="n">transpose</span><span class="p">()]</span>
+    <span class="n">haplo_non_missing</span> <span class="o">=</span> <span class="p">[</span><span class="n">h</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">haplo_str</span> <span class="k">if</span> <span class="s2">&quot;-&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">h</span><span class="p">]</span>
+
+    <span class="n">values</span><span class="p">,</span> <span class="n">counts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">haplo_non_missing</span><span class="p">,</span> <span class="n">return_counts</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">freqs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">counts</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">counts</span><span class="p">))[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">freqs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">freqs</span><span class="p">,</span><span class="n">decimals</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">freqs</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>To create our example panel, we begin by selecting only the windows that satisfy our minimum criteria, in this example between 3 and 10 variants and heterozygosity of at least 0.6.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">windows_subset</span> <span class="o">=</span> <span class="n">windows_df</span><span class="p">[(</span><span class="n">windows_df</span><span class="p">[</span><span class="s2">&quot;variant_counts&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">between</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span><span class="o">&amp;</span><span class="p">(</span><span class="n">windows_df</span><span class="p">[</span><span class="s2">&quot;het&quot;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mf">0.6</span><span class="p">)]</span>
+<span class="nb">len</span><span class="p">(</span><span class="n">windows_subset</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>1110
+</pre></div>
+</div>
+</div>
+</div>
+<p>We then select 50 evenly-spaced windows and visualise some basic summary statistics for the panel using the functions defined above:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">n_muhap_per_core</span> <span class="o">=</span> <span class="n">get_n_muhap_per_core</span><span class="p">(</span><span class="n">pv_core</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
+<span class="n">muhap_list</span> <span class="o">=</span> <span class="n">get_even_muhap_list</span><span class="p">(</span><span class="n">windows_subset</span><span class="p">,</span> <span class="n">pv_core</span><span class="p">,</span> <span class="n">n_muhap_per_core</span><span class="p">,</span> <span class="n">spacing</span><span class="o">=</span><span class="mi">10_000</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plot_markers</span><span class="p">(</span><span class="n">windows_subset</span><span class="p">,</span><span class="n">muhap_list</span><span class="p">,</span> <span class="n">pv_regions</span><span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="s2">&quot;chrom&quot;</span><span class="p">,</span><span class="s2">&quot;chromStart&quot;</span><span class="p">]))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/17e0c0f7739ade52e07ffea55f897f6f21fe882d06036dd46d4000a4464ffc01.png" src="_images/17e0c0f7739ade52e07ffea55f897f6f21fe882d06036dd46d4000a4464ffc01.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plot_panel_stats</span><span class="p">(</span><span class="n">windows_subset</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">muhap_list</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/a3702f6c7990a754def6ee4ae5f2924609754d0a1146317274b4b8ff9309686b.png" src="_images/a3702f6c7990a754def6ee4ae5f2924609754d0a1146317274b4b8ff9309686b.png" />
+</div>
+</div>
+<p>At this point we could experiment with other selection algorithms, different parameters, introduce some degree of manual curation, etc. Once happy, we can proceed to extracting the actual list of variants:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">panel</span><span class="o">=</span><span class="n">win_to_variants</span><span class="p">(</span><span class="n">windows_subset</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">muhap_list</span><span class="p">],</span> <span class="n">variant_coords</span><span class="p">)</span>
+<span class="n">panel</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -1402,44 +1507,1141 @@ Only 3 out of 4 windows found in PvP01_10_v1:140990-1011339
       <td>PvP01_01_v1:395454;PvP01_01_v1:395481;PvP01_01...</td>
     </tr>
     <tr>
-      <th>350</th>
-      <td>PvP01_01_v1:612226:69,72,122</td>
-      <td>612226</td>
-      <td>612348</td>
-      <td>122</td>
+      <th>467</th>
+      <td>PvP01_01_v1:772094:42,60,64,65,117</td>
+      <td>772094</td>
+      <td>772211</td>
+      <td>117</td>
+      <td>6</td>
+      <td>PvP01_01_v1:772094;PvP01_01_v1:772136;PvP01_01...</td>
+    </tr>
+    <tr>
+      <th>742</th>
+      <td>PvP01_02_v1:327553:35,63,129,186</td>
+      <td>327553</td>
+      <td>327739</td>
+      <td>186</td>
+      <td>5</td>
+      <td>PvP01_02_v1:327553;PvP01_02_v1:327588;PvP01_02...</td>
+    </tr>
+    <tr>
+      <th>1247</th>
+      <td>PvP01_03_v1:178938:83,84,152,156</td>
+      <td>178938</td>
+      <td>179094</td>
+      <td>156</td>
+      <td>5</td>
+      <td>PvP01_03_v1:178938;PvP01_03_v1:179021;PvP01_03...</td>
+    </tr>
+    <tr>
+      <th>1760</th>
+      <td>PvP01_03_v1:831863:12,111,135</td>
+      <td>831863</td>
+      <td>831998</td>
+      <td>135</td>
       <td>4</td>
-      <td>PvP01_01_v1:612226;PvP01_01_v1:612295;PvP01_01...</td>
-    </tr>
-    <tr>
-      <th>459</th>
-      <td>PvP01_01_v1:765111:27,84</td>
-      <td>765111</td>
-      <td>765195</td>
-      <td>84</td>
-      <td>3</td>
-      <td>PvP01_01_v1:765111;PvP01_01_v1:765138;PvP01_01...</td>
-    </tr>
-    <tr>
-      <th>520</th>
-      <td>PvP01_01_v1:836037:21,69</td>
-      <td>836037</td>
-      <td>836106</td>
-      <td>69</td>
-      <td>3</td>
-      <td>PvP01_01_v1:836037;PvP01_01_v1:836058;PvP01_01...</td>
-    </tr>
-    <tr>
-      <th>580</th>
-      <td>PvP01_02_v1:101590:60,126</td>
-      <td>101590</td>
-      <td>101716</td>
-      <td>126</td>
-      <td>3</td>
-      <td>PvP01_02_v1:101590;PvP01_02_v1:101650;PvP01_02...</td>
+      <td>PvP01_03_v1:831863;PvP01_03_v1:831875;PvP01_03...</td>
     </tr>
   </tbody>
 </table>
 </div></div></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">panel</span><span class="p">[</span><span class="s2">&quot;number&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>285
+</pre></div>
+</div>
+</div>
+</div>
+<p>There are in total 285 variants across the 50 selected windows.</p>
+<p>We are now ready to prepare the input files for <code class="docutils literal notranslate"><span class="pre">paneljudge</span></code>. In order to do so, we need to decide which samples (or population) to use to calculate the haplotypes frequencies. As an example, let’s use samples from the eastern part of Southeast Asia (see the Pv4 paper for details on how populations are defined based on geographic and genetic homogeneity):</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Filter the samples based on the criteria above</span>
+<span class="n">loc_filtered_samples</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="p">(</span><span class="n">sample_metadata</span><span class="p">[</span><span class="s2">&quot;Population&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;ESEA&quot;</span><span class="p">)</span>
+    <span class="o">&amp;</span> <span class="p">(</span><span class="n">sample_metadata</span><span class="p">[</span><span class="s2">&quot;Fws&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.95</span><span class="p">)</span>
+    <span class="o">&amp;</span> <span class="p">(</span><span class="n">sample_metadata</span><span class="p">[</span><span class="s2">&quot;</span><span class="si">% c</span><span class="s2">allable&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">50</span><span class="p">)</span>
+    <span class="o">&amp;</span> <span class="p">(</span><span class="n">sample_metadata</span><span class="p">[</span><span class="s2">&quot;Exclusion reason&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Analysis_set&quot;</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="n">subset_metadata</span> <span class="o">=</span> <span class="n">sample_metadata</span><span class="p">[</span><span class="n">loc_filtered_samples</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">subset_metadata</span><span class="p">))</span>
+<span class="n">variant_dataset_filtered_samples</span> <span class="o">=</span> <span class="n">variant_dataset</span><span class="o">.</span><span class="n">isel</span><span class="p">(</span><span class="n">samples</span><span class="o">=</span><span class="n">loc_filtered_samples</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>161
+</pre></div>
+</div>
+</div>
+</div>
+<p>The next part speeds-up the computation by reducing the genomics data to the 161 samples and 285 variants needed.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">variables_to_remove</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">variant_dataset_filtered_samples</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="c1"># Add all variable names to remove list...</span>
+<span class="n">variables_to_remove</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;call_genotype&quot;</span><span class="p">)</span> <span class="c1"># ...but we need to keep the genotypes</span>
+<span class="n">reduced_variant_set</span> <span class="o">=</span> <span class="n">variant_dataset_filtered_samples</span><span class="o">.</span><span class="n">drop_vars</span><span class="p">(</span><span class="n">variables_to_remove</span><span class="p">)</span> <span class="c1"># Reduce the dataset</span>
+
+<span class="c1"># Pre-load the data to avoid continuous query to the cloud. Not strictly speaking necessary.</span>
+<span class="n">ids</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">p</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">c</span><span class="p">,</span><span class="n">p</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">variant_dataset_filtered_samples</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="s2">&quot;variant_chrom&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+                                 <span class="n">variant_dataset_filtered_samples</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="s2">&quot;variant_position&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)]</span>
+<span class="n">reduced_variant_set</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;variants&quot;</span><span class="p">,</span><span class="n">ids</span><span class="p">)</span>
+<span class="n">all_variants</span> <span class="o">=</span> <span class="n">reduced_variant_set</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="n">variants</span><span class="o">=</span><span class="s2">&quot;id&quot;</span><span class="p">)</span>
+<span class="n">all_variants</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div><svg style="position: absolute; width: 0; height: 0; overflow: hidden">
+<defs>
+<symbol id="icon-database" viewBox="0 0 32 32">
+<path d="M16 0c-8.837 0-16 2.239-16 5v4c0 2.761 7.163 5 16 5s16-2.239 16-5v-4c0-2.761-7.163-5-16-5z"></path>
+<path d="M16 17c-8.837 0-16-2.239-16-5v6c0 2.761 7.163 5 16 5s16-2.239 16-5v-6c0 2.761-7.163 5-16 5z"></path>
+<path d="M16 26c-8.837 0-16-2.239-16-5v6c0 2.761 7.163 5 16 5s16-2.239 16-5v-6c0 2.761-7.163 5-16 5z"></path>
+</symbol>
+<symbol id="icon-file-text2" viewBox="0 0 32 32">
+<path d="M28.681 7.159c-0.694-0.947-1.662-2.053-2.724-3.116s-2.169-2.030-3.116-2.724c-1.612-1.182-2.393-1.319-2.841-1.319h-15.5c-1.378 0-2.5 1.121-2.5 2.5v27c0 1.378 1.122 2.5 2.5 2.5h23c1.378 0 2.5-1.122 2.5-2.5v-19.5c0-0.448-0.137-1.23-1.319-2.841zM24.543 5.457c0.959 0.959 1.712 1.825 2.268 2.543h-4.811v-4.811c0.718 0.556 1.584 1.309 2.543 2.268zM28 29.5c0 0.271-0.229 0.5-0.5 0.5h-23c-0.271 0-0.5-0.229-0.5-0.5v-27c0-0.271 0.229-0.5 0.5-0.5 0 0 15.499-0 15.5 0v7c0 0.552 0.448 1 1 1h7v19.5z"></path>
+<path d="M23 26h-14c-0.552 0-1-0.448-1-1s0.448-1 1-1h14c0.552 0 1 0.448 1 1s-0.448 1-1 1z"></path>
+<path d="M23 22h-14c-0.552 0-1-0.448-1-1s0.448-1 1-1h14c0.552 0 1 0.448 1 1s-0.448 1-1 1z"></path>
+<path d="M23 18h-14c-0.552 0-1-0.448-1-1s0.448-1 1-1h14c0.552 0 1 0.448 1 1s-0.448 1-1 1z"></path>
+</symbol>
+</defs>
+</svg>
+<style>/* CSS stylesheet for displaying xarray objects in jupyterlab.
+ *
+ */
+
+:root {
+  --xr-font-color0: var(--jp-content-font-color0, rgba(0, 0, 0, 1));
+  --xr-font-color2: var(--jp-content-font-color2, rgba(0, 0, 0, 0.54));
+  --xr-font-color3: var(--jp-content-font-color3, rgba(0, 0, 0, 0.38));
+  --xr-border-color: var(--jp-border-color2, #e0e0e0);
+  --xr-disabled-color: var(--jp-layout-color3, #bdbdbd);
+  --xr-background-color: var(--jp-layout-color0, white);
+  --xr-background-color-row-even: var(--jp-layout-color1, white);
+  --xr-background-color-row-odd: var(--jp-layout-color2, #eeeeee);
+}
+
+html[theme=dark],
+body[data-theme=dark],
+body.vscode-dark {
+  --xr-font-color0: rgba(255, 255, 255, 1);
+  --xr-font-color2: rgba(255, 255, 255, 0.54);
+  --xr-font-color3: rgba(255, 255, 255, 0.38);
+  --xr-border-color: #1F1F1F;
+  --xr-disabled-color: #515151;
+  --xr-background-color: #111111;
+  --xr-background-color-row-even: #111111;
+  --xr-background-color-row-odd: #313131;
+}
+
+.xr-wrap {
+  display: block !important;
+  min-width: 300px;
+  max-width: 700px;
+}
+
+.xr-text-repr-fallback {
+  /* fallback to plain text repr when CSS is not injected (untrusted notebook) */
+  display: none;
+}
+
+.xr-header {
+  padding-top: 6px;
+  padding-bottom: 6px;
+  margin-bottom: 4px;
+  border-bottom: solid 1px var(--xr-border-color);
+}
+
+.xr-header > div,
+.xr-header > ul {
+  display: inline;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.xr-obj-type,
+.xr-array-name {
+  margin-left: 2px;
+  margin-right: 10px;
+}
+
+.xr-obj-type {
+  color: var(--xr-font-color2);
+}
+
+.xr-sections {
+  padding-left: 0 !important;
+  display: grid;
+  grid-template-columns: 150px auto auto 1fr 20px 20px;
+}
+
+.xr-section-item {
+  display: contents;
+}
+
+.xr-section-item input {
+  display: none;
+}
+
+.xr-section-item input + label {
+  color: var(--xr-disabled-color);
+}
+
+.xr-section-item input:enabled + label {
+  cursor: pointer;
+  color: var(--xr-font-color2);
+}
+
+.xr-section-item input:enabled + label:hover {
+  color: var(--xr-font-color0);
+}
+
+.xr-section-summary {
+  grid-column: 1;
+  color: var(--xr-font-color2);
+  font-weight: 500;
+}
+
+.xr-section-summary > span {
+  display: inline-block;
+  padding-left: 0.5em;
+}
+
+.xr-section-summary-in:disabled + label {
+  color: var(--xr-font-color2);
+}
+
+.xr-section-summary-in + label:before {
+  display: inline-block;
+  content: '►';
+  font-size: 11px;
+  width: 15px;
+  text-align: center;
+}
+
+.xr-section-summary-in:disabled + label:before {
+  color: var(--xr-disabled-color);
+}
+
+.xr-section-summary-in:checked + label:before {
+  content: '▼';
+}
+
+.xr-section-summary-in:checked + label > span {
+  display: none;
+}
+
+.xr-section-summary,
+.xr-section-inline-details {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+.xr-section-inline-details {
+  grid-column: 2 / -1;
+}
+
+.xr-section-details {
+  display: none;
+  grid-column: 1 / -1;
+  margin-bottom: 5px;
+}
+
+.xr-section-summary-in:checked ~ .xr-section-details {
+  display: contents;
+}
+
+.xr-array-wrap {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 20px auto;
+}
+
+.xr-array-wrap > label {
+  grid-column: 1;
+  vertical-align: top;
+}
+
+.xr-preview {
+  color: var(--xr-font-color3);
+}
+
+.xr-array-preview,
+.xr-array-data {
+  padding: 0 5px !important;
+  grid-column: 2;
+}
+
+.xr-array-data,
+.xr-array-in:checked ~ .xr-array-preview {
+  display: none;
+}
+
+.xr-array-in:checked ~ .xr-array-data,
+.xr-array-preview {
+  display: inline-block;
+}
+
+.xr-dim-list {
+  display: inline-block !important;
+  list-style: none;
+  padding: 0 !important;
+  margin: 0;
+}
+
+.xr-dim-list li {
+  display: inline-block;
+  padding: 0;
+  margin: 0;
+}
+
+.xr-dim-list:before {
+  content: '(';
+}
+
+.xr-dim-list:after {
+  content: ')';
+}
+
+.xr-dim-list li:not(:last-child):after {
+  content: ',';
+  padding-right: 5px;
+}
+
+.xr-has-index {
+  font-weight: bold;
+}
+
+.xr-var-list,
+.xr-var-item {
+  display: contents;
+}
+
+.xr-var-item > div,
+.xr-var-item label,
+.xr-var-item > .xr-var-name span {
+  background-color: var(--xr-background-color-row-even);
+  margin-bottom: 0;
+}
+
+.xr-var-item > .xr-var-name:hover span {
+  padding-right: 5px;
+}
+
+.xr-var-list > li:nth-child(odd) > div,
+.xr-var-list > li:nth-child(odd) > label,
+.xr-var-list > li:nth-child(odd) > .xr-var-name span {
+  background-color: var(--xr-background-color-row-odd);
+}
+
+.xr-var-name {
+  grid-column: 1;
+}
+
+.xr-var-dims {
+  grid-column: 2;
+}
+
+.xr-var-dtype {
+  grid-column: 3;
+  text-align: right;
+  color: var(--xr-font-color2);
+}
+
+.xr-var-preview {
+  grid-column: 4;
+}
+
+.xr-index-preview {
+  grid-column: 2 / 5;
+  color: var(--xr-font-color2);
+}
+
+.xr-var-name,
+.xr-var-dims,
+.xr-var-dtype,
+.xr-preview,
+.xr-attrs dt {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 10px;
+}
+
+.xr-var-name:hover,
+.xr-var-dims:hover,
+.xr-var-dtype:hover,
+.xr-attrs dt:hover {
+  overflow: visible;
+  width: auto;
+  z-index: 1;
+}
+
+.xr-var-attrs,
+.xr-var-data,
+.xr-index-data {
+  display: none;
+  background-color: var(--xr-background-color) !important;
+  padding-bottom: 5px !important;
+}
+
+.xr-var-attrs-in:checked ~ .xr-var-attrs,
+.xr-var-data-in:checked ~ .xr-var-data,
+.xr-index-data-in:checked ~ .xr-index-data {
+  display: block;
+}
+
+.xr-var-data > table {
+  float: right;
+}
+
+.xr-var-name span,
+.xr-var-data,
+.xr-index-name div,
+.xr-index-data,
+.xr-attrs {
+  padding-left: 25px !important;
+}
+
+.xr-attrs,
+.xr-var-attrs,
+.xr-var-data,
+.xr-index-data {
+  grid-column: 1 / -1;
+}
+
+dl.xr-attrs {
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 125px auto;
+}
+
+.xr-attrs dt,
+.xr-attrs dd {
+  padding: 0;
+  margin: 0;
+  float: left;
+  padding-right: 10px;
+  width: auto;
+}
+
+.xr-attrs dt {
+  font-weight: normal;
+  grid-column: 1;
+}
+
+.xr-attrs dt:hover span {
+  display: inline-block;
+  background: var(--xr-background-color);
+  padding-right: 10px;
+}
+
+.xr-attrs dd {
+  grid-column: 2;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.xr-icon-database,
+.xr-icon-file-text2,
+.xr-no-icon {
+  display: inline-block;
+  vertical-align: middle;
+  width: 1em;
+  height: 1.5em !important;
+  stroke-width: 0;
+  stroke: currentColor;
+  fill: currentColor;
+}
+</style><pre class='xr-text-repr-fallback'>&lt;xarray.Dataset&gt;
+Dimensions:           (variants: 4571056, samples: 161, ploidy: 2)
+Coordinates:
+    variant_position  (variants) int32 dask.array&lt;chunksize=(65536,), meta=np.ndarray&gt;
+    variant_chrom     (variants) object dask.array&lt;chunksize=(65536,), meta=np.ndarray&gt;
+    sample_id         (samples) object dask.array&lt;chunksize=(161,), meta=np.ndarray&gt;
+  * variants          (variants) &lt;U33 &#x27;PvP01_01_v1:23&#x27; ... &#x27;Transfer.PvP01_00...
+Dimensions without coordinates: samples, ploidy
+Data variables:
+    call_genotype     (variants, samples, ploidy) int8 dask.array&lt;chunksize=(65536, 2, 2), meta=np.ndarray&gt;</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>xarray.Dataset</div></div><ul class='xr-sections'><li class='xr-section-item'><input id='section-98751c2f-0bed-425e-a41c-79c9fa11d401' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-98751c2f-0bed-425e-a41c-79c9fa11d401' class='xr-section-summary'  title='Expand/collapse section'>Dimensions:</label><div class='xr-section-inline-details'><ul class='xr-dim-list'><li><span class='xr-has-index'>variants</span>: 4571056</li><li><span>samples</span>: 161</li><li><span>ploidy</span>: 2</li></ul></div><div class='xr-section-details'></div></li><li class='xr-section-item'><input id='section-1e1c6e8c-353b-4fae-8443-a3bee1a651a3' class='xr-section-summary-in' type='checkbox'  checked><label for='section-1e1c6e8c-353b-4fae-8443-a3bee1a651a3' class='xr-section-summary' >Coordinates: <span>(4)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'><li class='xr-var-item'><div class='xr-var-name'><span>variant_position</span></div><div class='xr-var-dims'>(variants)</div><div class='xr-var-dtype'>int32</div><div class='xr-var-preview xr-preview'>dask.array&lt;chunksize=(65536,), meta=np.ndarray&gt;</div><input id='attrs-8ddb6281-ecea-478e-b208-f19f31af4614' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-8ddb6281-ecea-478e-b208-f19f31af4614' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-b56373f7-f06f-4917-951f-e3783f1ee38e' class='xr-var-data-in' type='checkbox'><label for='data-b56373f7-f06f-4917-951f-e3783f1ee38e' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><table>
+    <tr>
+        <td>
+            <table style="border-collapse: collapse;">
+                <thead>
+                    <tr>
+                        <td> </td>
+                        <th> Array </th>
+                        <th> Chunk </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                    <tr>
+                        <th> Bytes </th>
+                        <td> 17.44 MiB </td>
+                        <td> 256.00 kiB </td>
+                    </tr>
+                    
+                    <tr>
+                        <th> Shape </th>
+                        <td> (4571056,) </td>
+                        <td> (65536,) </td>
+                    </tr>
+                    <tr>
+                        <th> Dask graph </th>
+                        <td colspan="2"> 70 chunks in 1 graph layer </td>
+                    </tr>
+                    <tr>
+                        <th> Data type </th>
+                        <td colspan="2"> int32 numpy.ndarray </td>
+                    </tr>
+                </tbody>
+            </table>
+        </td>
+        <td>
+        <svg width="170" height="75" style="stroke:rgb(0,0,0);stroke-width:1" >
+
+  <!-- Horizontal lines -->
+  <line x1="0" y1="0" x2="120" y2="0" style="stroke-width:2" />
+  <line x1="0" y1="25" x2="120" y2="25" style="stroke-width:2" />
+
+  <!-- Vertical lines -->
+  <line x1="0" y1="0" x2="0" y2="25" style="stroke-width:2" />
+  <line x1="5" y1="0" x2="5" y2="25" />
+  <line x1="12" y1="0" x2="12" y2="25" />
+  <line x1="18" y1="0" x2="18" y2="25" />
+  <line x1="24" y1="0" x2="24" y2="25" />
+  <line x1="30" y1="0" x2="30" y2="25" />
+  <line x1="37" y1="0" x2="37" y2="25" />
+  <line x1="43" y1="0" x2="43" y2="25" />
+  <line x1="49" y1="0" x2="49" y2="25" />
+  <line x1="56" y1="0" x2="56" y2="25" />
+  <line x1="61" y1="0" x2="61" y2="25" />
+  <line x1="68" y1="0" x2="68" y2="25" />
+  <line x1="75" y1="0" x2="75" y2="25" />
+  <line x1="80" y1="0" x2="80" y2="25" />
+  <line x1="87" y1="0" x2="87" y2="25" />
+  <line x1="94" y1="0" x2="94" y2="25" />
+  <line x1="99" y1="0" x2="99" y2="25" />
+  <line x1="106" y1="0" x2="106" y2="25" />
+  <line x1="113" y1="0" x2="113" y2="25" />
+  <line x1="120" y1="0" x2="120" y2="25" style="stroke-width:2" />
+
+  <!-- Colored Rectangle -->
+  <polygon points="0.0,0.0 120.0,0.0 120.0,25.412616514582485 0.0,25.412616514582485" style="fill:#8B4903A0;stroke-width:0"/>
+
+  <!-- Text -->
+  <text x="60.000000" y="45.412617" font-size="1.0rem" font-weight="100" text-anchor="middle" >4571056</text>
+  <text x="140.000000" y="12.706308" font-size="1.0rem" font-weight="100" text-anchor="middle" transform="rotate(0,140.000000,12.706308)">1</text>
+</svg>
+        </td>
+    </tr>
+</table></div></li><li class='xr-var-item'><div class='xr-var-name'><span>variant_chrom</span></div><div class='xr-var-dims'>(variants)</div><div class='xr-var-dtype'>object</div><div class='xr-var-preview xr-preview'>dask.array&lt;chunksize=(65536,), meta=np.ndarray&gt;</div><input id='attrs-382ef8b7-042c-4b99-a422-d56f1fac7e9e' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-382ef8b7-042c-4b99-a422-d56f1fac7e9e' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-ae0f3658-3b4e-4fbd-925f-53e01b131481' class='xr-var-data-in' type='checkbox'><label for='data-ae0f3658-3b4e-4fbd-925f-53e01b131481' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><table>
+    <tr>
+        <td>
+            <table style="border-collapse: collapse;">
+                <thead>
+                    <tr>
+                        <td> </td>
+                        <th> Array </th>
+                        <th> Chunk </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                    <tr>
+                        <th> Bytes </th>
+                        <td> 34.87 MiB </td>
+                        <td> 512.00 kiB </td>
+                    </tr>
+                    
+                    <tr>
+                        <th> Shape </th>
+                        <td> (4571056,) </td>
+                        <td> (65536,) </td>
+                    </tr>
+                    <tr>
+                        <th> Dask graph </th>
+                        <td colspan="2"> 70 chunks in 1 graph layer </td>
+                    </tr>
+                    <tr>
+                        <th> Data type </th>
+                        <td colspan="2"> object numpy.ndarray </td>
+                    </tr>
+                </tbody>
+            </table>
+        </td>
+        <td>
+        <svg width="170" height="75" style="stroke:rgb(0,0,0);stroke-width:1" >
+
+  <!-- Horizontal lines -->
+  <line x1="0" y1="0" x2="120" y2="0" style="stroke-width:2" />
+  <line x1="0" y1="25" x2="120" y2="25" style="stroke-width:2" />
+
+  <!-- Vertical lines -->
+  <line x1="0" y1="0" x2="0" y2="25" style="stroke-width:2" />
+  <line x1="5" y1="0" x2="5" y2="25" />
+  <line x1="12" y1="0" x2="12" y2="25" />
+  <line x1="18" y1="0" x2="18" y2="25" />
+  <line x1="24" y1="0" x2="24" y2="25" />
+  <line x1="30" y1="0" x2="30" y2="25" />
+  <line x1="37" y1="0" x2="37" y2="25" />
+  <line x1="43" y1="0" x2="43" y2="25" />
+  <line x1="49" y1="0" x2="49" y2="25" />
+  <line x1="56" y1="0" x2="56" y2="25" />
+  <line x1="61" y1="0" x2="61" y2="25" />
+  <line x1="68" y1="0" x2="68" y2="25" />
+  <line x1="75" y1="0" x2="75" y2="25" />
+  <line x1="80" y1="0" x2="80" y2="25" />
+  <line x1="87" y1="0" x2="87" y2="25" />
+  <line x1="94" y1="0" x2="94" y2="25" />
+  <line x1="99" y1="0" x2="99" y2="25" />
+  <line x1="106" y1="0" x2="106" y2="25" />
+  <line x1="113" y1="0" x2="113" y2="25" />
+  <line x1="120" y1="0" x2="120" y2="25" style="stroke-width:2" />
+
+  <!-- Colored Rectangle -->
+  <polygon points="0.0,0.0 120.0,0.0 120.0,25.412616514582485 0.0,25.412616514582485" style="fill:#8B4903A0;stroke-width:0"/>
+
+  <!-- Text -->
+  <text x="60.000000" y="45.412617" font-size="1.0rem" font-weight="100" text-anchor="middle" >4571056</text>
+  <text x="140.000000" y="12.706308" font-size="1.0rem" font-weight="100" text-anchor="middle" transform="rotate(0,140.000000,12.706308)">1</text>
+</svg>
+        </td>
+    </tr>
+</table></div></li><li class='xr-var-item'><div class='xr-var-name'><span>sample_id</span></div><div class='xr-var-dims'>(samples)</div><div class='xr-var-dtype'>object</div><div class='xr-var-preview xr-preview'>dask.array&lt;chunksize=(161,), meta=np.ndarray&gt;</div><input id='attrs-b865a39f-d94d-4b5b-8cfc-5ff2780225a2' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-b865a39f-d94d-4b5b-8cfc-5ff2780225a2' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-3c4a4564-f24a-4978-acfa-08d9f6f6fa18' class='xr-var-data-in' type='checkbox'><label for='data-3c4a4564-f24a-4978-acfa-08d9f6f6fa18' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><table>
+    <tr>
+        <td>
+            <table style="border-collapse: collapse;">
+                <thead>
+                    <tr>
+                        <td> </td>
+                        <th> Array </th>
+                        <th> Chunk </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                    <tr>
+                        <th> Bytes </th>
+                        <td> 1.26 kiB </td>
+                        <td> 1.26 kiB </td>
+                    </tr>
+                    
+                    <tr>
+                        <th> Shape </th>
+                        <td> (161,) </td>
+                        <td> (161,) </td>
+                    </tr>
+                    <tr>
+                        <th> Dask graph </th>
+                        <td colspan="2"> 1 chunks in 2 graph layers </td>
+                    </tr>
+                    <tr>
+                        <th> Data type </th>
+                        <td colspan="2"> object numpy.ndarray </td>
+                    </tr>
+                </tbody>
+            </table>
+        </td>
+        <td>
+        <svg width="170" height="75" style="stroke:rgb(0,0,0);stroke-width:1" >
+
+  <!-- Horizontal lines -->
+  <line x1="0" y1="0" x2="120" y2="0" style="stroke-width:2" />
+  <line x1="0" y1="25" x2="120" y2="25" style="stroke-width:2" />
+
+  <!-- Vertical lines -->
+  <line x1="0" y1="0" x2="0" y2="25" style="stroke-width:2" />
+  <line x1="120" y1="0" x2="120" y2="25" style="stroke-width:2" />
+
+  <!-- Colored Rectangle -->
+  <polygon points="0.0,0.0 120.0,0.0 120.0,25.412616514582485 0.0,25.412616514582485" style="fill:#ECB172A0;stroke-width:0"/>
+
+  <!-- Text -->
+  <text x="60.000000" y="45.412617" font-size="1.0rem" font-weight="100" text-anchor="middle" >161</text>
+  <text x="140.000000" y="12.706308" font-size="1.0rem" font-weight="100" text-anchor="middle" transform="rotate(0,140.000000,12.706308)">1</text>
+</svg>
+        </td>
+    </tr>
+</table></div></li><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>variants</span></div><div class='xr-var-dims'>(variants)</div><div class='xr-var-dtype'>&lt;U33</div><div class='xr-var-preview xr-preview'>&#x27;PvP01_01_v1:23&#x27; ... &#x27;Transfer.P...</div><input id='attrs-c36ff561-627c-4332-a7fe-499b8b7c3e1a' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-c36ff561-627c-4332-a7fe-499b8b7c3e1a' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-498f98d5-ed87-4325-9ef8-224c4842746f' class='xr-var-data-in' type='checkbox'><label for='data-498f98d5-ed87-4325-9ef8-224c4842746f' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([&#x27;PvP01_01_v1:23&#x27;, &#x27;PvP01_01_v1:26&#x27;, &#x27;PvP01_01_v1:27&#x27;, ...,
+       &#x27;Transfer.PvP01_00_99.final:3769&#x27;, &#x27;Transfer.PvP01_00_99.final:3771&#x27;,
+       &#x27;Transfer.PvP01_00_99.final:3774&#x27;], dtype=&#x27;&lt;U33&#x27;)</pre></div></li></ul></div></li><li class='xr-section-item'><input id='section-bd75be83-0876-4fdc-b13c-2f5e60386fff' class='xr-section-summary-in' type='checkbox'  checked><label for='section-bd75be83-0876-4fdc-b13c-2f5e60386fff' class='xr-section-summary' >Data variables: <span>(1)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'><li class='xr-var-item'><div class='xr-var-name'><span>call_genotype</span></div><div class='xr-var-dims'>(variants, samples, ploidy)</div><div class='xr-var-dtype'>int8</div><div class='xr-var-preview xr-preview'>dask.array&lt;chunksize=(65536, 2, 2), meta=np.ndarray&gt;</div><input id='attrs-e3dd7e1e-2244-41c8-865c-ff3cf034fd3d' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-e3dd7e1e-2244-41c8-865c-ff3cf034fd3d' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-f9beb55e-f76c-4a7b-a66b-5c0c4059c69e' class='xr-var-data-in' type='checkbox'><label for='data-f9beb55e-f76c-4a7b-a66b-5c0c4059c69e' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><table>
+    <tr>
+        <td>
+            <table style="border-collapse: collapse;">
+                <thead>
+                    <tr>
+                        <td> </td>
+                        <th> Array </th>
+                        <th> Chunk </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                    <tr>
+                        <th> Bytes </th>
+                        <td> 1.37 GiB </td>
+                        <td> 3.75 MiB </td>
+                    </tr>
+                    
+                    <tr>
+                        <th> Shape </th>
+                        <td> (4571056, 161, 2) </td>
+                        <td> (65536, 30, 2) </td>
+                    </tr>
+                    <tr>
+                        <th> Dask graph </th>
+                        <td colspan="2"> 1120 chunks in 2 graph layers </td>
+                    </tr>
+                    <tr>
+                        <th> Data type </th>
+                        <td colspan="2"> int8 numpy.ndarray </td>
+                    </tr>
+                </tbody>
+            </table>
+        </td>
+        <td>
+        <svg width="156" height="146" style="stroke:rgb(0,0,0);stroke-width:1" >
+
+  <!-- Horizontal lines -->
+  <line x1="10" y1="0" x2="80" y2="70" style="stroke-width:2" />
+  <line x1="10" y1="0" x2="80" y2="70" />
+  <line x1="10" y1="5" x2="80" y2="75" />
+  <line x1="10" y1="5" x2="80" y2="76" />
+  <line x1="10" y1="5" x2="80" y2="76" />
+  <line x1="10" y1="8" x2="80" y2="78" />
+  <line x1="10" y1="10" x2="80" y2="80" />
+  <line x1="10" y1="11" x2="80" y2="81" />
+  <line x1="10" y1="11" x2="80" y2="81" />
+  <line x1="10" y1="11" x2="80" y2="82" />
+  <line x1="10" y1="14" x2="80" y2="85" />
+  <line x1="10" y1="16" x2="80" y2="87" />
+  <line x1="10" y1="17" x2="80" y2="88" />
+  <line x1="10" y1="19" x2="80" y2="89" />
+  <line x1="10" y1="22" x2="80" y2="92" />
+  <line x1="10" y1="23" x2="80" y2="94" />
+  <line x1="10" y1="25" x2="80" y2="96" style="stroke-width:2" />
+
+  <!-- Vertical lines -->
+  <line x1="10" y1="0" x2="10" y2="25" style="stroke-width:2" />
+  <line x1="13" y1="3" x2="13" y2="28" />
+  <line x1="17" y1="7" x2="17" y2="32" />
+  <line x1="21" y1="11" x2="21" y2="36" />
+  <line x1="24" y1="14" x2="24" y2="39" />
+  <line x1="28" y1="18" x2="28" y2="43" />
+  <line x1="32" y1="22" x2="32" y2="47" />
+  <line x1="35" y1="25" x2="35" y2="50" />
+  <line x1="39" y1="29" x2="39" y2="54" />
+  <line x1="43" y1="33" x2="43" y2="58" />
+  <line x1="46" y1="36" x2="46" y2="61" />
+  <line x1="50" y1="40" x2="50" y2="65" />
+  <line x1="54" y1="44" x2="54" y2="69" />
+  <line x1="57" y1="47" x2="57" y2="72" />
+  <line x1="61" y1="51" x2="61" y2="77" />
+  <line x1="65" y1="55" x2="65" y2="81" />
+  <line x1="68" y1="58" x2="68" y2="84" />
+  <line x1="72" y1="62" x2="72" y2="88" />
+  <line x1="76" y1="66" x2="76" y2="92" />
+  <line x1="80" y1="70" x2="80" y2="96" style="stroke-width:2" />
+
+  <!-- Colored Rectangle -->
+  <polygon points="10.0,0.0 80.58823529411765,70.58823529411765 80.58823529411765,96.00085180870013 10.0,25.412616514582485" style="fill:#8B4903A0;stroke-width:0"/>
+
+  <!-- Horizontal lines -->
+  <line x1="10" y1="0" x2="35" y2="0" style="stroke-width:2" />
+  <line x1="13" y1="3" x2="38" y2="3" />
+  <line x1="17" y1="7" x2="42" y2="7" />
+  <line x1="21" y1="11" x2="46" y2="11" />
+  <line x1="24" y1="14" x2="49" y2="14" />
+  <line x1="28" y1="18" x2="53" y2="18" />
+  <line x1="32" y1="22" x2="57" y2="22" />
+  <line x1="35" y1="25" x2="60" y2="25" />
+  <line x1="39" y1="29" x2="64" y2="29" />
+  <line x1="43" y1="33" x2="68" y2="33" />
+  <line x1="46" y1="36" x2="71" y2="36" />
+  <line x1="50" y1="40" x2="75" y2="40" />
+  <line x1="54" y1="44" x2="79" y2="44" />
+  <line x1="57" y1="47" x2="82" y2="47" />
+  <line x1="61" y1="51" x2="87" y2="51" />
+  <line x1="65" y1="55" x2="91" y2="55" />
+  <line x1="68" y1="58" x2="94" y2="58" />
+  <line x1="72" y1="62" x2="98" y2="62" />
+  <line x1="76" y1="66" x2="102" y2="66" />
+  <line x1="80" y1="70" x2="106" y2="70" style="stroke-width:2" />
+
+  <!-- Vertical lines -->
+  <line x1="10" y1="0" x2="80" y2="70" style="stroke-width:2" />
+  <line x1="35" y1="0" x2="106" y2="70" style="stroke-width:2" />
+
+  <!-- Colored Rectangle -->
+  <polygon points="10.0,0.0 35.41261651458248,0.0 106.00085180870013,70.58823529411765 80.58823529411765,70.58823529411765" style="fill:#8B4903A0;stroke-width:0"/>
+
+  <!-- Horizontal lines -->
+  <line x1="80" y1="70" x2="106" y2="70" style="stroke-width:2" />
+  <line x1="80" y1="70" x2="106" y2="70" />
+  <line x1="80" y1="75" x2="106" y2="75" />
+  <line x1="80" y1="76" x2="106" y2="76" />
+  <line x1="80" y1="76" x2="106" y2="76" />
+  <line x1="80" y1="78" x2="106" y2="78" />
+  <line x1="80" y1="80" x2="106" y2="80" />
+  <line x1="80" y1="81" x2="106" y2="81" />
+  <line x1="80" y1="81" x2="106" y2="81" />
+  <line x1="80" y1="82" x2="106" y2="82" />
+  <line x1="80" y1="85" x2="106" y2="85" />
+  <line x1="80" y1="87" x2="106" y2="87" />
+  <line x1="80" y1="88" x2="106" y2="88" />
+  <line x1="80" y1="89" x2="106" y2="89" />
+  <line x1="80" y1="92" x2="106" y2="92" />
+  <line x1="80" y1="94" x2="106" y2="94" />
+  <line x1="80" y1="96" x2="106" y2="96" style="stroke-width:2" />
+
+  <!-- Vertical lines -->
+  <line x1="80" y1="70" x2="80" y2="96" style="stroke-width:2" />
+  <line x1="106" y1="70" x2="106" y2="96" style="stroke-width:2" />
+
+  <!-- Colored Rectangle -->
+  <polygon points="80.58823529411765,70.58823529411765 106.00085180870013,70.58823529411765 106.00085180870013,96.00085180870013 80.58823529411765,96.00085180870013" style="fill:#ECB172A0;stroke-width:0"/>
+
+  <!-- Text -->
+  <text x="93.294544" y="116.000852" font-size="1.0rem" font-weight="100" text-anchor="middle" >2</text>
+  <text x="126.000852" y="83.294544" font-size="1.0rem" font-weight="100" text-anchor="middle" transform="rotate(-90,126.000852,83.294544)">161</text>
+  <text x="35.294118" y="80.706734" font-size="1.0rem" font-weight="100" text-anchor="middle" transform="rotate(45,35.294118,80.706734)">4571056</text>
+</svg>
+        </td>
+    </tr>
+</table></div></li></ul></div></li><li class='xr-section-item'><input id='section-0eb09332-098f-4372-a66c-040d50f36a70' class='xr-section-summary-in' type='checkbox'  ><label for='section-0eb09332-098f-4372-a66c-040d50f36a70' class='xr-section-summary' >Indexes: <span>(1)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'><li class='xr-var-item'><div class='xr-index-name'><div>variants</div></div><div class='xr-index-preview'>PandasIndex</div><div></div><input id='index-3de3f669-3ccf-4c81-8118-a879250e57da' class='xr-index-data-in' type='checkbox'/><label for='index-3de3f669-3ccf-4c81-8118-a879250e57da' title='Show/Hide index repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-index-data'><pre>PandasIndex(Index([&#x27;PvP01_01_v1:23&#x27;, &#x27;PvP01_01_v1:26&#x27;, &#x27;PvP01_01_v1:27&#x27;, &#x27;PvP01_01_v1:34&#x27;,
+       &#x27;PvP01_01_v1:41&#x27;, &#x27;PvP01_01_v1:42&#x27;, &#x27;PvP01_01_v1:43&#x27;, &#x27;PvP01_01_v1:48&#x27;,
+       &#x27;PvP01_01_v1:52&#x27;, &#x27;PvP01_01_v1:54&#x27;,
+       ...
+       &#x27;Transfer.PvP01_00_99.final:3760&#x27;, &#x27;Transfer.PvP01_00_99.final:3761&#x27;,
+       &#x27;Transfer.PvP01_00_99.final:3762&#x27;, &#x27;Transfer.PvP01_00_99.final:3763&#x27;,
+       &#x27;Transfer.PvP01_00_99.final:3764&#x27;, &#x27;Transfer.PvP01_00_99.final:3765&#x27;,
+       &#x27;Transfer.PvP01_00_99.final:3766&#x27;, &#x27;Transfer.PvP01_00_99.final:3769&#x27;,
+       &#x27;Transfer.PvP01_00_99.final:3771&#x27;, &#x27;Transfer.PvP01_00_99.final:3774&#x27;],
+      dtype=&#x27;object&#x27;, name=&#x27;variants&#x27;, length=4571056))</pre></div></li></ul></div></li><li class='xr-section-item'><input id='section-c2d79601-08cd-49bf-8b0c-6021a2b30559' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-c2d79601-08cd-49bf-8b0c-6021a2b30559' class='xr-section-summary'  title='Expand/collapse section'>Attributes: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'></dl></div></li></ul></div></div></div></div>
+</div>
+<p>The final step is to create actual input files by going through all microhaplotypes one by one.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">create_pj_files</span><span class="p">(</span><span class="n">panel</span><span class="p">,</span> <span class="n">variants</span><span class="p">):</span>
+
+    <span class="c1"># Initialise the dataframe</span>
+    <span class="n">pj</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Amplicon_name&quot;</span><span class="p">,</span><span class="s2">&quot;Chr&quot;</span><span class="p">,</span><span class="s2">&quot;Start&quot;</span><span class="p">,</span><span class="s2">&quot;Stop&quot;</span><span class="p">,</span><span class="s2">&quot;length&quot;</span><span class="p">,</span><span class="s2">&quot;pos&quot;</span><span class="p">,</span><span class="s2">&quot;chrom&quot;</span><span class="p">,</span><span class="s2">&quot;distances&quot;</span><span class="p">,</span><span class="s2">&quot;freqs&quot;</span><span class="p">],</span><span class="n">index</span><span class="o">=</span><span class="n">panel</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">])</span>
+
+    <span class="c1"># Interate through each window/microhaplotype</span>
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">amplicon</span> <span class="ow">in</span> <span class="n">panel</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+
+        <span class="c1"># Convert chromosome names to number (e.g. &#39;PvP01_07_v1&#39; -&gt; 13)</span>
+        <span class="n">chr_name</span> <span class="o">=</span> <span class="n">amplicon</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">chr_num</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">chr_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="c1"># Fill in all fields required by paneljudge</span>
+        <span class="n">pj</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">amplicon</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]][</span><span class="s2">&quot;Amplicon_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">amplicon</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span>
+        <span class="n">pj</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">amplicon</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]][</span><span class="s2">&quot;Chr&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">chr_name</span>
+        <span class="n">pj</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">amplicon</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]][</span><span class="s2">&quot;Start&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">amplicon</span><span class="p">[</span><span class="s2">&quot;start&quot;</span><span class="p">]</span>
+        <span class="n">pj</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">amplicon</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]][</span><span class="s2">&quot;Stop&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">amplicon</span><span class="p">[</span><span class="s2">&quot;end&quot;</span><span class="p">]</span>
+        <span class="n">pj</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">amplicon</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]][</span><span class="s2">&quot;length&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">amplicon</span><span class="p">[</span><span class="s2">&quot;end&quot;</span><span class="p">]</span><span class="o">-</span><span class="n">amplicon</span><span class="p">[</span><span class="s2">&quot;start&quot;</span><span class="p">]</span>
+        <span class="n">pj</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">amplicon</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]][</span><span class="s2">&quot;pos&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">([</span><span class="n">amplicon</span><span class="p">[</span><span class="s2">&quot;start&quot;</span><span class="p">],</span><span class="n">amplicon</span><span class="p">[</span><span class="s2">&quot;end&quot;</span><span class="p">]]))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;int&quot;</span><span class="p">)</span>
+        <span class="n">pj</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">amplicon</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]][</span><span class="s2">&quot;chrom&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">chr_num</span>
+        <span class="c1"># This step is the most demanding as it requires access to the genomic data</span>
+        <span class="n">pj</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">amplicon</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]][</span><span class="s2">&quot;freqs&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">haplotype_freq</span><span class="p">(</span><span class="n">amplicon</span><span class="p">[</span><span class="s2">&quot;variants&quot;</span><span class="p">],</span> <span class="n">variants</span><span class="p">)</span>
+
+        <span class="c1"># Finally, calculate the forward intra-markers distance</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pj</span><span class="o">.</span><span class="n">iterrows</span><span class="p">()):</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pj</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">pj</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;chrom&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">pj</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;chrom&quot;</span><span class="p">]:</span>
+                    <span class="n">pj</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;distances&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pj</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;pos&quot;</span><span class="p">]</span><span class="o">-</span><span class="n">pj</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;pos&quot;</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">pj</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;distances&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Inf&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">pj</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;distances&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Inf&quot;</span>
+    
+    <span class="k">return</span> <span class="n">pj</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
+<span class="n">pj_df</span> <span class="o">=</span> <span class="n">create_pj_files</span><span class="p">(</span><span class="n">panel</span><span class="p">,</span><span class="n">all_variants</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CPU times: user 22 s, sys: 2.39 s, total: 24.3 s
+Wall time: 1min 34s
+</pre></div>
+</div>
+</div>
+</div>
+<p>Data are ready to be saved in tsv files to be later processed in R. We need to files, one containing the microhaplotypes details (genomic position, etc), and one containing the frequency of each allele.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Save the markers file</span>
+<span class="n">pj_df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="s2">&quot;freqs&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s2">&quot;../precomputed/markers.tsv&quot;</span><span class="p">,</span> <span class="n">index_label</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="c1"># paneljudge requires the frequencies to be linearised (one row per microhaplotype, one column per allele)</span>
+<span class="c1"># The next lines calculates how many columns are required (max number of alleles across all microhaplotypes)</span>
+<span class="n">ff</span> <span class="o">=</span> <span class="n">pj_df</span><span class="p">[</span><span class="s2">&quot;freqs&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+<span class="n">max_alleles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="n">i</span><span class="o">.</span><span class="n">size</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">ff</span><span class="p">])</span>
+<span class="c1"># Create and save the frequencies dataframe</span>
+<span class="n">pj_freqs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_records</span><span class="p">(</span><span class="n">ff</span><span class="p">,</span><span class="n">index</span><span class="o">=</span><span class="n">pj_df</span><span class="p">[</span><span class="s2">&quot;Amplicon_name&quot;</span><span class="p">],</span>
+                                    <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;Allele.</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">max_alleles</span><span class="p">)])</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">pj_freqs</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s2">&quot;../precomputed/frequencies.tsv&quot;</span><span class="p">,</span> <span class="n">index_label</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="n">pj_freqs</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Allele.0</th>
+      <th>Allele.1</th>
+      <th>Allele.2</th>
+      <th>Allele.3</th>
+      <th>Allele.4</th>
+      <th>Allele.5</th>
+      <th>Allele.6</th>
+      <th>Allele.7</th>
+      <th>Allele.8</th>
+      <th>Allele.9</th>
+      <th>...</th>
+      <th>Allele.29</th>
+      <th>Allele.30</th>
+      <th>Allele.31</th>
+      <th>Allele.32</th>
+      <th>Allele.33</th>
+      <th>Allele.34</th>
+      <th>Allele.35</th>
+      <th>Allele.36</th>
+      <th>Allele.37</th>
+      <th>Allele.38</th>
+    </tr>
+    <tr>
+      <th>Amplicon_name</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>PvP01_01_v1:395454:27,40,55,67,154</th>
+      <td>0.44720</td>
+      <td>0.18634</td>
+      <td>0.12422</td>
+      <td>0.06211</td>
+      <td>0.05590</td>
+      <td>0.04969</td>
+      <td>0.02484</td>
+      <td>0.02484</td>
+      <td>0.00621</td>
+      <td>0.00621</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>PvP01_01_v1:772094:42,60,64,65,117</th>
+      <td>0.51899</td>
+      <td>0.25316</td>
+      <td>0.05063</td>
+      <td>0.03797</td>
+      <td>0.03797</td>
+      <td>0.02532</td>
+      <td>0.02532</td>
+      <td>0.02532</td>
+      <td>0.01899</td>
+      <td>0.00633</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>PvP01_02_v1:327553:35,63,129,186</th>
+      <td>0.48447</td>
+      <td>0.11801</td>
+      <td>0.09317</td>
+      <td>0.06832</td>
+      <td>0.06211</td>
+      <td>0.05590</td>
+      <td>0.03106</td>
+      <td>0.01863</td>
+      <td>0.01242</td>
+      <td>0.01242</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>PvP01_03_v1:178938:83,84,152,156</th>
+      <td>0.37736</td>
+      <td>0.23899</td>
+      <td>0.19497</td>
+      <td>0.16352</td>
+      <td>0.01258</td>
+      <td>0.00629</td>
+      <td>0.00629</td>
+      <td>0.00000</td>
+      <td>0.00000</td>
+      <td>0.00000</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>PvP01_03_v1:831863:12,111,135</th>
+      <td>0.31013</td>
+      <td>0.22152</td>
+      <td>0.13924</td>
+      <td>0.11392</td>
+      <td>0.05063</td>
+      <td>0.04430</td>
+      <td>0.03165</td>
+      <td>0.02532</td>
+      <td>0.01899</td>
+      <td>0.01266</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+  </tbody>
+</table>
+<p>5 rows × 39 columns</p>
+</div></div></div>
+</div>
+<p>The two files (in this example <code class="docutils literal notranslate"><span class="pre">markers.tsv</span></code> and <code class="docutils literal notranslate"><span class="pre">frequencies.tsv</span></code> in the <code class="docutils literal notranslate"><span class="pre">precomputed</span></code> directory) are now ready to be read in R before running <code class="docutils literal notranslate"><span class="pre">paneljudge</span></code>. The snippet of R code below is an example on how to do that:</p>
+<div class="highlight-R notranslate"><div class="highlight"><pre><span></span><span class="nf">library</span><span class="p">(</span><span class="n">paneljudge</span><span class="p">)</span>
+<span class="nf">set.seed</span><span class="p">(</span><span class="m">250523</span><span class="p">)</span><span class="w"> </span><span class="c1"># For reproducibility</span>
+
+<span class="c1"># Read the data</span>
+<span class="n">markers_info</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">read.delim</span><span class="p">(</span><span class="s">&quot;markers.tsv&quot;</span><span class="p">,</span><span class="n">stringsAsFactors</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">F</span><span class="p">)[,</span><span class="m">-1</span><span class="p">]</span>
+<span class="n">freq_values</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">read.delim</span><span class="p">(</span><span class="s">&quot;frequencies.tsv&quot;</span><span class="p">,</span><span class="n">stringsAsFactors</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">F</span><span class="p">)</span>
+
+<span class="c1"># Prepare the necessary data structures</span>
+<span class="nf">rownames</span><span class="p">(</span><span class="n">markers_info</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">markers_info</span><span class="o">$</span><span class="n">Amplicon_name</span>
+<span class="n">markers_info</span><span class="o">$</span><span class="n">pos</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">as.numeric</span><span class="p">(</span><span class="n">markers_info</span><span class="o">$</span><span class="n">pos</span><span class="p">)</span>
+<span class="n">markers_info</span><span class="o">$</span><span class="n">chrom</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">as.numeric</span><span class="p">(</span><span class="n">markers_info</span><span class="o">$</span><span class="n">chrom</span><span class="p">)</span>
+
+<span class="n">frequency_values</span><span class="o">&lt;-</span><span class="nf">list</span><span class="p">(</span><span class="s">&quot;ESEA&quot;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">data.matrix</span><span class="p">(</span><span class="n">freq_values</span><span class="p">[,</span><span class="m">-1</span><span class="p">]))</span>
+<span class="nf">dimnames</span><span class="p">(</span><span class="n">frequency_values</span><span class="o">$</span><span class="n">ESEA</span><span class="p">)[[</span><span class="m">1</span><span class="p">]]</span><span class="o">&lt;-</span><span class="n">freq_values</span><span class="p">[,</span><span class="m">1</span><span class="p">]</span>
+<span class="nf">dimnames</span><span class="p">(</span><span class="n">frequency_values</span><span class="o">$</span><span class="n">ESEA</span><span class="p">)[[</span><span class="m">2</span><span class="p">]]</span><span class="o">&lt;-</span><span class="nf">names</span><span class="p">(</span><span class="n">freq_values</span><span class="p">[,</span><span class="m">-1</span><span class="p">])</span>
+<span class="nf">attr</span><span class="p">(</span><span class="n">frequency_values</span><span class="p">,</span><span class="s">&quot;split_type&quot;</span><span class="p">)</span><span class="o">&lt;-</span><span class="s">&quot;data.frame&quot;</span>
+<span class="nf">attr</span><span class="p">(</span><span class="n">frequency_values</span><span class="p">,</span><span class="s">&quot;split_labels&quot;</span><span class="p">)</span><span class="o">&lt;-</span><span class="nf">data.frame</span><span class="p">(</span><span class="s">&quot;Country&quot;</span><span class="o">=</span><span class="s">&quot;ESEA&quot;</span><span class="p">,</span><span class="n">stringsAsFactors</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">F</span><span class="p">)</span>
+
+<span class="c1"># Save the data structures for future use</span>
+<span class="nf">save</span><span class="p">(</span><span class="s">&quot;markers_info&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">file</span><span class="o">=</span><span class="s">&quot;markers.RData&quot;</span><span class="p">)</span>
+<span class="nf">save</span><span class="p">(</span><span class="s">&quot;frequency_values&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">file</span><span class="o">=</span><span class="s">&quot;frequencies.RData&quot;</span><span class="p">)</span>
+
+<span class="c1"># Simulate n genotype pairs, r in rs, and k in ks</span>
+<span class="c1"># Relatedness values</span>
+<span class="n">rs</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="s">&quot;0.01&quot;</span><span class="o">=</span><span class="m">0.01</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;0.25&quot;</span><span class="o">=</span><span class="m">0.25</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;0.50&quot;</span><span class="o">=</span><span class="m">0.50</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;0.75&quot;</span><span class="o">=</span><span class="m">0.75</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;0.99&quot;</span><span class="o">=</span><span class="m">0.99</span><span class="p">)</span>
+<span class="c1"># Switch rates</span>
+<span class="n">ks</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="s">&#39;1&#39;</span><span class="o">=</span><span class="m">1</span><span class="p">,</span><span class="s">&#39;5&#39;</span><span class="o">=</span><span class="m">5</span><span class="p">,</span><span class="s">&#39;10&#39;</span><span class="o">=</span><span class="m">10</span><span class="p">,</span><span class="s">&#39;50&#39;</span><span class="o">=</span><span class="m">50</span><span class="p">)</span>
+
+<span class="c1"># Number of pairs to per simulate per r in rs and k in ks</span>
+<span class="n">n</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="m">100</span>
+
+<span class="c1"># Run the simulations</span>
+<span class="n">ds</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">markers_info</span><span class="o">$</span><span class="n">distances</span><span class="w"> </span><span class="c1"># Distances</span>
+<span class="n">mles_CIs</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">lapply</span><span class="p">(</span><span class="n">frequency_values</span><span class="p">,</span><span class="w"> </span><span class="nf">function</span><span class="p">(</span><span class="n">fs</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nf">lapply</span><span class="p">(</span><span class="n">ks</span><span class="p">,</span><span class="w"> </span><span class="nf">function</span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nf">lapply</span><span class="p">(</span><span class="n">rs</span><span class="p">,</span><span class="w"> </span><span class="nf">function</span><span class="p">(</span><span class="n">r</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nf">lapply</span><span class="p">(</span><span class="m">1</span><span class="o">:</span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="nf">function</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">sim_Ys</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">simulate_Ys</span><span class="p">(</span><span class="n">fs</span><span class="p">,</span><span class="w"> </span><span class="n">ds</span><span class="p">,</span><span class="w"> </span><span class="n">k</span><span class="p">,</span><span class="w"> </span><span class="n">r</span><span class="p">)</span><span class="w"> </span><span class="c1"># Stimulate data</span>
+<span class="w">        </span><span class="n">krhat</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">estimate_r_and_k</span><span class="p">(</span><span class="n">fs</span><span class="p">,</span><span class="w"> </span><span class="n">ds</span><span class="p">,</span><span class="w"> </span><span class="n">Ys</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sim_Ys</span><span class="p">)</span><span class="w"> </span><span class="c1"># Estimate k and r</span>
+<span class="w">        </span><span class="n">CIs</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">compute_r_and_k_CIs</span><span class="p">(</span><span class="n">fs</span><span class="p">,</span><span class="w"> </span><span class="n">ds</span><span class="p">,</span><span class="w"> </span><span class="n">krhat</span><span class="p">[</span><span class="s">&#39;khat&#39;</span><span class="p">],</span><span class="w"> </span><span class="n">krhat</span><span class="p">[</span><span class="s">&#39;rhat&#39;</span><span class="p">])</span><span class="w"> </span><span class="c1"># CIs</span>
+<span class="w">        </span><span class="nf">return</span><span class="p">(</span><span class="nf">cbind</span><span class="p">(</span><span class="n">krhat</span><span class="p">,</span><span class="w"> </span><span class="n">CIs</span><span class="p">))</span><span class="w"> </span><span class="c1"># Return mles and CIs</span>
+<span class="w">      </span><span class="p">})</span>
+<span class="w">    </span><span class="p">})</span>
+<span class="w">  </span><span class="p">})</span>
+<span class="p">})</span>
+
+<span class="c1"># Save the results</span>
+<span class="nf">save</span><span class="p">(</span><span class="n">mles_CIs</span><span class="p">,</span><span class="w"> </span><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#39;mles_CIs.RData&#39;</span><span class="p">)</span>
+</pre></div>
 </div>
 </section>
 </section>
@@ -1501,6 +2703,7 @@ Only 3 out of 4 windows found in PvP01_10_v1:140990-1011339
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#environment-and-data">Environment and data</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-the-data">Loading the data</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#load-the-genomic-data">Load the genomic data</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#data-exploration">Data exploration</a></li>
@@ -1510,7 +2713,7 @@ Only 3 out of 4 windows found in PvP01_10_v1:140990-1011339
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#evenly-spaced">Evenly spaced</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#variants-list">Variants list</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#worked-example">Worked example</a></li>
 </ul>
   </nav></div>
 
