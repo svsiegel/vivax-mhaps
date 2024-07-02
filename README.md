@@ -1,6 +1,6 @@
 # Lineage-informative microhaplotypes for spatio-temporal surveillance of Plasmodium vivax malaria parasites
 
-This is the companion repository for the paper [Lineage-informative microhaplotypes for spatio-temporal surveillance of Plasmodium vivax malaria parasites](https://www.medrxiv.org/content/10.1101/2023.03.13.23287179v1). Please use DOI 10.5281/zenodo.12622788 for citations.
+This is the companion repository for the paper [Lineage-informative microhaplotypes for spatio-temporal surveillance of Plasmodium vivax malaria parasites](https://www.medrxiv.org/content/10.1101/2023.03.13.23287179v1). Please use DOI 10.5281/zenodo.12622789 for citations.
 
 The main aim of this repository is to provide details on the methods used for the discovery, selection, and exploration/optimisation of candidate microhaplotype panels for _P. vivax_. In addition, it provides a customisable template framework that can be adapted to different needs based on requirements for different panel use cases such as number of panel markers, diversity criteria, geographical region, selection process, etc. The github pages website link can be found here, where all the code is executable from directly: https://svsiegel.github.io/vivax-mhaps/
 
